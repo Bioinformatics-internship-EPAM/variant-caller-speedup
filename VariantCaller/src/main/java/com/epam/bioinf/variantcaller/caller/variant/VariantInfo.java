@@ -7,7 +7,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 
 import java.util.HashMap;
 import java.util.Map;
-
+// -Xlog:safepoint -Xlog:gc* -Xlog:age*=debug -Xlog:gc -Xlog:gc+heap=trace -Xlog:task*=debug -Xloggc:/home/aphona/bioinf/results/gc.log
 /**
  * Holds all the information about a particular genome base and its variants.
  */

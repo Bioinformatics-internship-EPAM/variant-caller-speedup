@@ -27,7 +27,7 @@ public class ReadData {
   }
 
   public String getSampleName() {
-    return samRecord.getAttribute(SAMTag.SM.name()).toString();
+    return "sample"; //samRecord.getAttribute(SAMTag.SM.name()).toString();
   }
 
   public byte getBaseQualityAtPosition(int i) {

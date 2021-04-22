@@ -18,7 +18,7 @@ import java.util.*;
 public class Caller {
   private final IndexedFastaSequenceFile fastaSequenceFile;
   private final List<SAMRecord> samRecords;
-  private final Map<String, Map<Integer, Map<Allele, VariantInfo>>> variantInfoMap;
+  private final Map<String, Map<Integer, AlleleVariantInfo>> variantInfoMap; //Map<Allele, VariantInfo>
 
   /**
    * Gets an indexed fasta sequence file
@@ -226,12 +226,15 @@ public class Caller {
    * @return found or created VariantInfo
    */
   private VariantInfo computeVariantInfo(String contig, int pos, Allele ref) {
-    return Optional.ofNullable(variantInfoMap.get(contig))
+    var a = Optional.ofNullable(variantInfoMap.get(contig))
         .map(x -> x.get(pos))
         .map(x -> x.get(ref))
-        .orElseGet(() -> variantInfoMap
+        .orElseGet(() -> {
+          variantInfoMap
             .computeIfAbsent(contig, key -> new HashMap<>())
-            .computeIfAbsent(pos, key -> new HashMap<>())
-            .computeIfAbsent(ref, key -> new VariantInfo(contig, pos, ref)));
+            .computeIfAbsent(pos, key -> new AlleleVariantInfo(ref, new VariantInfo(contig, pos, ref)));
+          return variantInfoMap.get(contig).get(pos).get(ref);
+        });
+    return a;
   }
 }
