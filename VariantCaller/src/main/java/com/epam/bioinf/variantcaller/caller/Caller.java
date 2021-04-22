@@ -11,6 +11,7 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Finds and holds variants.
@@ -18,7 +19,7 @@ import java.util.*;
 public class Caller {
   private final IndexedFastaSequenceFile fastaSequenceFile;
   private final List<SAMRecord> samRecords;
-  private final Map<String, Map<Integer, AlleleVariantInfo>> variantInfoMap; //Map<Allele, VariantInfo>
+  private final Map<String, Map<Integer, VariantInfo>> variantInfoMap; //Map<Allele, VariantInfo>
 
   /**
    * Gets an indexed fasta sequence file
@@ -38,9 +39,9 @@ public class Caller {
   public List<VariantContext> findVariants() {
     callVariants();
     var result = new ArrayList<VariantContext>();
-    variantInfoMap.values().stream()
-        .flatMap(contigMap -> contigMap.values().stream())
-        .flatMap(positionMap -> positionMap.values().stream())
+    Stream<VariantInfo> sab = variantInfoMap.values().stream()
+        .flatMap(contigMap -> contigMap.values().stream());
+    sab
         .forEach(variantInfo -> {
           VariantContext variantContext = variantInfo.makeVariantContext();
           if (variantContext != null) {
@@ -228,12 +229,11 @@ public class Caller {
   private VariantInfo computeVariantInfo(String contig, int pos, Allele ref) {
     var a = Optional.ofNullable(variantInfoMap.get(contig))
         .map(x -> x.get(pos))
-        .map(x -> x.get(ref))
         .orElseGet(() -> {
           variantInfoMap
             .computeIfAbsent(contig, key -> new HashMap<>())
-            .computeIfAbsent(pos, key -> new AlleleVariantInfo(ref, new VariantInfo(contig, pos, ref)));
-          return variantInfoMap.get(contig).get(pos).get(ref);
+            .computeIfAbsent(pos, key -> new VariantInfo(contig, pos, ref));
+          return variantInfoMap.get(contig).get(pos);
         });
     return a;
   }
