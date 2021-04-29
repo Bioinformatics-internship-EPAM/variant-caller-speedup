@@ -40,9 +40,10 @@ public class SampleData {
 
   @Override
   public String toString() {
-    return "SampleData{" +
-        "owner=" + owner +
-        ", alleleMap=" + alleleMap +
-        '}';
+    return //"SampleData{\"owner=\"" +
+            //owner +
+            ", alleleMap=" +
+            alleleMap +
+            '}';
   }
 }

@@ -37,10 +37,27 @@ public class Caller {
    * @return list of variant contexts which entries hold data about found variants
    */
   public List<VariantContext> findVariants() {
+    var startTime = System.nanoTime();
+    var startProgramTime = startTime;
+    System.out.println("starting processing reads: " + startTime);
+
     callVariants();
+    var finishTime = System.nanoTime();
+    System.out.println("finished processing reads: " + finishTime + " elapsed: " + ((finishTime-startTime)/1_000_000));
+
+    startTime = System.nanoTime();
+    System.out.println("starting flatMapping all maps: " + startTime);
+
     var result = new ArrayList<VariantContext>();
     Stream<VariantInfo> sab = variantInfoMap.values().stream()
         .flatMap(contigMap -> contigMap.values().stream());
+
+    finishTime = System.nanoTime();
+    System.out.println("finished flatMapping all maps: " + finishTime + " elapsed: " + ((finishTime-startTime)/1_000_000));
+
+    startTime = System.nanoTime();
+    System.out.println("starting creating variant contexts: " + startTime);
+
     sab
         .forEach(variantInfo -> {
           VariantContext variantContext = variantInfo.makeVariantContext();
@@ -48,9 +65,27 @@ public class Caller {
             result.add(variantContext);
           }
         });
+
+    finishTime = System.nanoTime();
+    System.out.println("finished creating variant contexts: " + finishTime + " elapsed(ms): " + ((finishTime-startTime)/1_000_000));
+
+    startTime = System.nanoTime();
+    System.out.println("starting sorting variant contexts: " + startTime);
+
     result.sort(Comparator.comparing(VariantContext::getContig)
         .thenComparing(VariantContext::getStart));
-    result.forEach(el -> System.out.println(el.toString()));
+
+    finishTime = System.nanoTime();
+    System.out.println("finished sorting variant contexts: " + finishTime + " elapsed(ms): " + ((finishTime-startTime)/1_000_000));
+
+    startTime = System.nanoTime();
+    System.out.println("starting printing variant contexts: " + startTime);
+    //result.forEach(el -> System.out.println(el.toString()));
+    finishTime = System.nanoTime();
+    System.out.println("finished printing variant contexts: " + finishTime + " elapsed(ms): " + ((finishTime-startTime)/1_000_000));
+
+    var totalElapsedTime = (System.nanoTime() - startProgramTime)/1_000_000;
+    System.out.println("totalElapsedTime: " + totalElapsedTime);
     return result;
   }
 
