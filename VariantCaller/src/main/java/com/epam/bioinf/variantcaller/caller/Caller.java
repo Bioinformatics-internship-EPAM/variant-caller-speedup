@@ -11,6 +11,7 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Finds and holds variants.
@@ -18,7 +19,7 @@ import java.util.*;
 public class Caller {
   private final IndexedFastaSequenceFile fastaSequenceFile;
   private final List<SAMRecord> samRecords;
-  private final Map<String, Map<Integer, Map<Allele, VariantInfo>>> variantInfoMap;
+  private final Map<String, Map<Integer, VariantInfo>> variantInfoMap; //Map<Allele, VariantInfo>
 
   /**
    * Gets an indexed fasta sequence file
@@ -27,7 +28,7 @@ public class Caller {
   public Caller(IndexedFastaSequenceFile fastaSequenceFile, List<SAMRecord> samRecords) {
     this.fastaSequenceFile = fastaSequenceFile;
     this.samRecords = samRecords;
-    this.variantInfoMap = new HashMap<>();
+    this.variantInfoMap = new TreeMap<>();
   }
 
   /**
@@ -36,20 +37,55 @@ public class Caller {
    * @return list of variant contexts which entries hold data about found variants
    */
   public List<VariantContext> findVariants() {
+    var startTime = System.nanoTime();
+    var startProgramTime = startTime;
+    System.out.println("starting processing reads: " + startTime);
+
     callVariants();
+    var finishTime = System.nanoTime();
+    System.out.println("finished processing reads: " + finishTime + " elapsed: " + ((finishTime-startTime)/1_000_000));
+
+    startTime = System.nanoTime();
+    System.out.println("starting flatMapping all maps: " + startTime);
+
     var result = new ArrayList<VariantContext>();
-    variantInfoMap.values().stream()
-        .flatMap(contigMap -> contigMap.values().stream())
-        .flatMap(positionMap -> positionMap.values().stream())
+    Stream<VariantInfo> sab = variantInfoMap.values().stream()
+        .flatMap(contigMap -> contigMap.values().stream());
+
+    finishTime = System.nanoTime();
+    System.out.println("finished flatMapping all maps: " + finishTime + " elapsed: " + ((finishTime-startTime)/1_000_000));
+
+    startTime = System.nanoTime();
+    System.out.println("starting creating variant contexts: " + startTime);
+
+    sab
         .forEach(variantInfo -> {
           VariantContext variantContext = variantInfo.makeVariantContext();
           if (variantContext != null) {
             result.add(variantContext);
           }
         });
+
+    finishTime = System.nanoTime();
+    System.out.println("finished creating variant contexts: " + finishTime + " elapsed(ms): " + ((finishTime-startTime)/1_000_000));
+
+    startTime = System.nanoTime();
+    System.out.println("starting sorting variant contexts: " + startTime);
+
     result.sort(Comparator.comparing(VariantContext::getContig)
         .thenComparing(VariantContext::getStart));
-    result.forEach(el -> System.out.println(el.toString()));
+
+    finishTime = System.nanoTime();
+    System.out.println("finished sorting variant contexts: " + finishTime + " elapsed(ms): " + ((finishTime-startTime)/1_000_000));
+
+    startTime = System.nanoTime();
+    System.out.println("starting printing variant contexts: " + startTime);
+    //result.forEach(el -> System.out.println(el.toString()));
+    finishTime = System.nanoTime();
+    System.out.println("finished printing variant contexts: " + finishTime + " elapsed(ms): " + ((finishTime-startTime)/1_000_000));
+
+    var totalElapsedTime = (System.nanoTime() - startProgramTime)/1_000_000;
+    System.out.println("totalElapsedTime: " + totalElapsedTime);
     return result;
   }
 
@@ -226,12 +262,14 @@ public class Caller {
    * @return found or created VariantInfo
    */
   private VariantInfo computeVariantInfo(String contig, int pos, Allele ref) {
-    return Optional.ofNullable(variantInfoMap.get(contig))
+    var a = Optional.ofNullable(variantInfoMap.get(contig))
         .map(x -> x.get(pos))
-        .map(x -> x.get(ref))
-        .orElseGet(() -> variantInfoMap
-            .computeIfAbsent(contig, key -> new HashMap<>())
-            .computeIfAbsent(pos, key -> new HashMap<>())
-            .computeIfAbsent(ref, key -> new VariantInfo(contig, pos, ref)));
+        .orElseGet(() -> {
+          variantInfoMap
+            .computeIfAbsent(contig, key -> new TreeMap<>())
+            .computeIfAbsent(pos, key -> new VariantInfo(contig, pos, ref));
+          return variantInfoMap.get(contig).get(pos);
+        });
+    return a;
   }
 }

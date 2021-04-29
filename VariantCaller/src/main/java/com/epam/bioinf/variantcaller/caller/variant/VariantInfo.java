@@ -7,7 +7,8 @@ import htsjdk.variant.variantcontext.VariantContext;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.TreeMap;
+// -Xlog:safepoint -Xlog:gc* -Xlog:age*=debug -Xlog:gc -Xlog:gc+heap=trace -Xlog:task*=debug -Xloggc:/home/aphona/bioinf/results/gc.log
 /**
  * Holds all the information about a particular genome base and its variants.
  */
@@ -21,7 +22,7 @@ public class VariantInfo {
     this.refAllele = refAllele;
     this.contig = contig;
     this.pos = pos;
-    sampleDataMap = new HashMap<>();
+    sampleDataMap = new TreeMap<>();
   }
 
   public Allele getRefAllele() {

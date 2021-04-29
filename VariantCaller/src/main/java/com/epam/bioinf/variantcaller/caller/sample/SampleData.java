@@ -6,6 +6,7 @@ import htsjdk.variant.variantcontext.Allele;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Holds an allele map where we count how many different alleles
@@ -17,7 +18,7 @@ public class SampleData {
 
   public SampleData(final VariantInfo owner) {
     this.owner = owner;
-    this.alleleMap = new HashMap<>();
+    this.alleleMap = new TreeMap<>();
   }
 
   /**
@@ -40,9 +41,10 @@ public class SampleData {
 
   @Override
   public String toString() {
-    return "SampleData{" +
-        "owner=" + owner +
-        ", alleleMap=" + alleleMap +
-        '}';
+    return //"SampleData{\"owner=\"" +
+            //owner +
+            ", alleleMap=" +
+            alleleMap +
+            '}';
   }
 }
