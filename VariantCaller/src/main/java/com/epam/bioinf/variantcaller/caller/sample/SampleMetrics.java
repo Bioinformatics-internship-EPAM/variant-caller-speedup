@@ -21,7 +21,7 @@ public class SampleMetrics {
   private final List<Integer> altBaseQs;
   private final List<Integer> refMapQs;
   private final List<Integer> altMapQs;
-  private final HashMap<Allele, Integer> alleleCnt;
+  private final TreeMap<Allele, Integer> alleleCnt;
   private final int dp;
 
 
@@ -31,7 +31,7 @@ public class SampleMetrics {
     this.altBaseQs = new ArrayList<>();
     this.refMapQs = new ArrayList<>();
     this.altMapQs = new ArrayList<>();
-    this.alleleCnt = new HashMap<>();
+    this.alleleCnt = new TreeMap<>();
 
     for (Map.Entry<Allele, PositionStatistics> entry : alleleMap.entrySet()) {
       Allele allele = entry.getKey();
@@ -155,7 +155,7 @@ public class SampleMetrics {
   /**
    * Returns the map where an allele matches its count
    */
-  public HashMap<Allele, Integer> getAlleleCnt() {
+  public TreeMap<Allele, Integer> getAlleleCnt() {
     return alleleCnt;
   }
 

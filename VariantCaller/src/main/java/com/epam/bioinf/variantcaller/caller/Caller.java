@@ -28,7 +28,7 @@ public class Caller {
   public Caller(IndexedFastaSequenceFile fastaSequenceFile, List<SAMRecord> samRecords) {
     this.fastaSequenceFile = fastaSequenceFile;
     this.samRecords = samRecords;
-    this.variantInfoMap = new HashMap<>();
+    this.variantInfoMap = new TreeMap<>();
   }
 
   /**
@@ -266,7 +266,7 @@ public class Caller {
         .map(x -> x.get(pos))
         .orElseGet(() -> {
           variantInfoMap
-            .computeIfAbsent(contig, key -> new HashMap<>())
+            .computeIfAbsent(contig, key -> new TreeMap<>())
             .computeIfAbsent(pos, key -> new VariantInfo(contig, pos, ref));
           return variantInfoMap.get(contig).get(pos);
         });
